@@ -1,1 +1,13 @@
-To learn more about toml_parser library, please visit [Crate documentation](https://github.com/stenbror/toml_parser/doc/toml_parser/index.html).
+# Simple library for toml parsing in rust.
+
+## Building 
+
+1. Building crate
+```
+  cargo build --release
+```
+
+2. Executing tests
+3. ```
+     cargo test
+   ```

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Toml","TomlTok"],"fn":["parse_toml"],"struct":["TomlErr","TomlParser","TomlSpan","TomlTokWithSpan"]};

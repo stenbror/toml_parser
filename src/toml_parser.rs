@@ -1,24 +1,31 @@
+
+/// Simple rust based toml parser
+
 use std::collections::HashMap;
 use std::str::Chars;
 
+/// Toml parser state structure
 #[derive(Default)]
 pub struct TomlParser {
     pub cur: char,
     pub pos: usize,
 }
 
+/// Position of current symbol in parser
 #[derive(PartialEq, Debug, Clone)]
 pub struct TomlSpan {
     pub start: usize,
     pub len: usize
 }
 
+/// Symbol currently analyzed by parser with span.
 #[derive(PartialEq, Debug)]
 pub struct TomlTokWithSpan {
     pub span: TomlSpan,
     pub tok: TomlTok
 }
 
+/// Toml symbol types
 #[derive(PartialEq, Debug)]
 pub enum TomlTok {
     Ident(String),
@@ -40,7 +47,7 @@ pub enum TomlTok {
     Eof
 }
 
-
+/// Node types returned by parsing symbols
 #[derive(PartialEq, Debug, Clone)]
 pub enum Toml {
     Str(String, TomlSpan),
@@ -59,17 +66,20 @@ impl Toml {
     }
 }
 
+/// Toml parse error structure with position and text
 pub struct TomlErr {
     pub msg: String,
     pub span: TomlSpan,
 }
 
+/// Parse Error format text out
 impl std::fmt::Debug for TomlErr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Toml error: {}, start:{} len:{}", self.msg, self.span.start, self.span.len)
     }
 }
 
+/// Start paring toml text, returning hashmap with resulting data structure or error
 pub fn parse_toml(data: &str) -> Result<HashMap<String, Toml>, TomlErr> {
     let i = &mut data.chars();
     let mut t = TomlParser::default();
@@ -122,6 +132,7 @@ pub fn parse_toml(data: &str) -> Result<HashMap<String, Toml>, TomlErr> {
     }
 }
 
+/// Collect value of literals
 impl TomlParser {
     pub fn to_val(&mut self, tok: TomlTokWithSpan, i: &mut Chars) -> Result<Toml, TomlErr> {
         match tok.tok {
@@ -153,6 +164,7 @@ impl TomlParser {
         }
     }
     
+    /// Parse rule for key/value
     pub fn parse_key_value(&mut self, local_scope: &str, key: String, i: &mut Chars, out: &mut HashMap<String, Toml>) -> Result<(), TomlErr> {
         let tok = self.next_tok(i) ?;
         if tok.tok != TomlTok::Equals {
@@ -207,14 +219,17 @@ impl TomlParser {
         }
     }
     
+    /// Create error message for lexical errors
     pub fn err_token(&self, tok: TomlTokWithSpan) -> TomlErr {
         TomlErr {msg: format!("Unexpected token {:?} ", tok), span: tok.span}
     }
     
+    /// Create error message for parse errors
     pub fn err_parse(&self, what: &str) -> TomlErr {
         TomlErr {msg: format!("Cannot parse toml {} ", what), span: TomlSpan {start: self.pos, len: 0}}
     }
     
+    /// Lexical analyzer for toml language
     pub fn next_tok(&mut self, i: &mut Chars) -> Result<TomlTokWithSpan, TomlErr> {
         
         while self.cur == '\n' || self.cur == '\r' || self.cur == '\t' || self.cur == ' ' || self.cur == '#' {
